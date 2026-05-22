@@ -156,6 +156,20 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+fd_venv/
+
+# DVC + MLflow + pipeline outputs
+mlruns/
+.dvc/cache
+.dvc/tmp
+data/processed/
+data/interim/
+data/raw/creditcard_2023.snapshot.csv
+models/best_params.json
+models/scaler.joblib
+models/candidates/
+reports/metrics.json
+reports/promotion.json
 
 # Spyder project settings
 .spyderproject

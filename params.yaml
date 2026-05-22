@@ -1,0 +1,56 @@
+# Pipeline parameters consumed by DVC stages and the fraud_detection package.
+# Anything used as a tunable knob lives here, not in code.
+
+random_state: 42
+
+paths:
+  raw_csv: data/raw/creditcard_2023.csv
+  raw_snapshot: data/raw/creditcard_2023.snapshot.csv
+  processed_dir: data/processed
+  train_features: data/processed/X_train.parquet
+  train_labels: data/processed/y_train.parquet
+  test_features: data/processed/X_test.parquet
+  test_labels: data/processed/y_test.parquet
+  scaler: models/scaler.joblib
+  best_params: models/best_params.json
+  candidate_dir: models/candidates
+  metrics: reports/metrics.json
+  promotion_report: reports/promotion.json
+  reports_dir: reports
+
+mlflow:
+  experiment_name: fraud-detection-experiments
+  registered_model_name: fraud-detection-champion
+  model_artifact_name: model
+
+ingest:
+  # If true, push the raw CSV to MongoDB before snapshotting.
+  push_to_mongo: true
+  # Batch size for chunked Mongo inserts.
+  mongo_batch_size: 1000
+  # Drop the existing collection before insert so each ingest is a clean snapshot.
+  mongo_drop_existing: true
+
+preprocess:
+  test_size: 0.2
+  stratify: true
+
+tune:
+  models: [logistic_regression, xgboost, lightgbm]
+  n_trials: 5
+  # Subsample the training set for tuning when it has more rows than this.
+  subsample_threshold: 5000
+  subsample_fraction: 0.2
+
+train:
+  models: [logistic_regression, xgboost, lightgbm]
+
+evaluate:
+  metrics: [accuracy, precision, recall, f1, roc_auc, avg_precision]
+
+register:
+  promotion_metric: f1
+  min_delta: 0.0
+  # Stage names used in the MLflow registry.
+  production_stage: Production
+  archived_stage: Archived

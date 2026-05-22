@@ -1,0 +1,90 @@
+stages:
+  ingest:
+    cmd: python -m fraud_detection.data.ingest
+    deps:
+      - src/fraud_detection/data/ingest.py
+      - src/fraud_detection/data/mongo_client.py
+      - src/fraud_detection/data/schema.py
+      - data/raw/creditcard_2023.csv
+    params:
+      - ingest
+      - paths.raw_csv
+      - paths.raw_snapshot
+    outs:
+      - data/raw/creditcard_2023.snapshot.csv
+
+  preprocess:
+    cmd: python -m fraud_detection.data.preprocess
+    deps:
+      - src/fraud_detection/data/preprocess.py
+      - src/fraud_detection/data/schema.py
+      - data/raw/creditcard_2023.snapshot.csv
+    params:
+      - preprocess
+      - random_state
+      - paths.train_features
+      - paths.train_labels
+      - paths.test_features
+      - paths.test_labels
+      - paths.scaler
+    outs:
+      - data/processed/X_train.parquet
+      - data/processed/X_test.parquet
+      - data/processed/y_train.parquet
+      - data/processed/y_test.parquet
+      - models/scaler.joblib
+
+  tune:
+    cmd: python -m fraud_detection.models.tune
+    deps:
+      - src/fraud_detection/models/tune.py
+      - src/fraud_detection/models/factory.py
+      - src/fraud_detection/models/mlflow_utils.py
+      - data/processed/X_train.parquet
+      - data/processed/y_train.parquet
+    params:
+      - tune
+      - random_state
+      - mlflow.experiment_name
+      - paths.best_params
+    outs:
+      - models/best_params.json
+
+  train:
+    cmd: python -m fraud_detection.models.train
+    deps:
+      - src/fraud_detection/models/train.py
+      - src/fraud_detection/models/factory.py
+      - src/fraud_detection/models/evaluate.py
+      - src/fraud_detection/models/mlflow_utils.py
+      - data/processed/X_train.parquet
+      - data/processed/y_train.parquet
+      - data/processed/X_test.parquet
+      - data/processed/y_test.parquet
+      - models/best_params.json
+    params:
+      - train
+      - random_state
+      - mlflow
+      - register.promotion_metric
+      - paths.metrics
+      - paths.candidate_dir
+    outs:
+      - models/candidates
+    metrics:
+      - reports/metrics.json:
+          cache: false
+
+  register:
+    cmd: python -m fraud_detection.models.register
+    deps:
+      - src/fraud_detection/models/register.py
+      - src/fraud_detection/models/mlflow_utils.py
+      - reports/metrics.json
+    params:
+      - register
+      - mlflow.registered_model_name
+      - paths.promotion_report
+    metrics:
+      - reports/promotion.json:
+          cache: false

@@ -1,0 +1,215 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python -m fraud_detection.data.ingest
+    deps:
+    - path: data/raw/creditcard_2023.csv
+      hash: md5
+      md5: 4067ed6e4eeb1700bd673e6103882c9d
+      size: 57523
+    - path: src/fraud_detection/data/ingest.py
+      hash: md5
+      md5: 8088523ee4cf3ee665cdf1a338adedb8
+      size: 4041
+    - path: src/fraud_detection/data/mongo_client.py
+      hash: md5
+      md5: e3e778406294b76ae261b60ef6abca3f
+      size: 1545
+    - path: src/fraud_detection/data/schema.py
+      hash: md5
+      md5: 1de65aa6296d674dc4cd63778895c097
+      size: 2808
+    params:
+      params.yaml:
+        ingest:
+          push_to_mongo: true
+          mongo_batch_size: 1000
+          mongo_drop_existing: true
+        paths.raw_csv: data/raw/creditcard_2023.csv
+        paths.raw_snapshot: data/raw/creditcard_2023.snapshot.csv
+    outs:
+    - path: data/raw/creditcard_2023.snapshot.csv
+      hash: md5
+      md5: 09bd5614d5cd0190cc71582b053b312b
+      size: 56527
+  preprocess:
+    cmd: python -m fraud_detection.data.preprocess
+    deps:
+    - path: data/raw/creditcard_2023.snapshot.csv
+      hash: md5
+      md5: 09bd5614d5cd0190cc71582b053b312b
+      size: 56527
+    - path: src/fraud_detection/data/preprocess.py
+      hash: md5
+      md5: 60b70ceaad9845d05c6e19cc4d180b3b
+      size: 5182
+    - path: src/fraud_detection/data/schema.py
+      hash: md5
+      md5: 1de65aa6296d674dc4cd63778895c097
+      size: 2808
+    params:
+      params.yaml:
+        paths.scaler: models/scaler.joblib
+        paths.test_features: data/processed/X_test.parquet
+        paths.test_labels: data/processed/y_test.parquet
+        paths.train_features: data/processed/X_train.parquet
+        paths.train_labels: data/processed/y_train.parquet
+        preprocess:
+          test_size: 0.2
+          stratify: true
+        random_state: 42
+    outs:
+    - path: data/processed/X_test.parquet
+      hash: md5
+      md5: d47e42c2294c62cd2a30e6c47cdf8768
+      size: 20738
+    - path: data/processed/X_train.parquet
+      hash: md5
+      md5: 220eb3abce14c2cb3309d32279babffc
+      size: 36555
+    - path: data/processed/y_test.parquet
+      hash: md5
+      md5: 006fb9028bc476d858e6547031ec8092
+      size: 1214
+    - path: data/processed/y_train.parquet
+      hash: md5
+      md5: 38791c1144c2d38a0444dbee409dad3d
+      size: 1227
+    - path: models/scaler.joblib
+      hash: md5
+      md5: 9748f638d9da87860f8c617f5978385a
+      size: 847
+  tune:
+    cmd: python -m fraud_detection.models.tune
+    deps:
+    - path: data/processed/X_train.parquet
+      hash: md5
+      md5: 220eb3abce14c2cb3309d32279babffc
+      size: 36555
+    - path: data/processed/y_train.parquet
+      hash: md5
+      md5: 38791c1144c2d38a0444dbee409dad3d
+      size: 1227
+    - path: src/fraud_detection/models/factory.py
+      hash: md5
+      md5: 7037e5d5dc7023dcf9ac7b4a10e5ec62
+      size: 2969
+    - path: src/fraud_detection/models/mlflow_utils.py
+      hash: md5
+      md5: 683540e27cbb9cab8651009ded890c8c
+      size: 1801
+    - path: src/fraud_detection/models/tune.py
+      hash: md5
+      md5: f4e52f81238562dd2bc81eeda2a9cff7
+      size: 4549
+    params:
+      params.yaml:
+        mlflow.experiment_name: fraud-detection-experiments
+        paths.best_params: models/best_params.json
+        random_state: 42
+        tune:
+          models:
+          - logistic_regression
+          - xgboost
+          - lightgbm
+          n_trials: 5
+          subsample_threshold: 5000
+          subsample_fraction: 0.2
+    outs:
+    - path: models/best_params.json
+      hash: md5
+      md5: 4dbbefee5ddb28a00592cc6946635333
+      size: 626
+  train:
+    cmd: python -m fraud_detection.models.train
+    deps:
+    - path: data/processed/X_test.parquet
+      hash: md5
+      md5: d47e42c2294c62cd2a30e6c47cdf8768
+      size: 20738
+    - path: data/processed/X_train.parquet
+      hash: md5
+      md5: 220eb3abce14c2cb3309d32279babffc
+      size: 36555
+    - path: data/processed/y_test.parquet
+      hash: md5
+      md5: 006fb9028bc476d858e6547031ec8092
+      size: 1214
+    - path: data/processed/y_train.parquet
+      hash: md5
+      md5: 38791c1144c2d38a0444dbee409dad3d
+      size: 1227
+    - path: models/best_params.json
+      hash: md5
+      md5: 4dbbefee5ddb28a00592cc6946635333
+      size: 626
+    - path: src/fraud_detection/models/evaluate.py
+      hash: md5
+      md5: 916f6b59de928e5ab70cbe61937de06f
+      size: 1502
+    - path: src/fraud_detection/models/factory.py
+      hash: md5
+      md5: 7037e5d5dc7023dcf9ac7b4a10e5ec62
+      size: 2969
+    - path: src/fraud_detection/models/mlflow_utils.py
+      hash: md5
+      md5: 683540e27cbb9cab8651009ded890c8c
+      size: 1801
+    - path: src/fraud_detection/models/train.py
+      hash: md5
+      md5: 9c7a6ceafe593c4c70644bb1517439fe
+      size: 5296
+    params:
+      params.yaml:
+        mlflow:
+          experiment_name: fraud-detection-experiments
+          registered_model_name: fraud-detection-champion
+          model_artifact_name: model
+        paths.candidate_dir: models/candidates
+        paths.metrics: reports/metrics.json
+        random_state: 42
+        register.promotion_metric: f1
+        train:
+          models:
+          - logistic_regression
+          - xgboost
+          - lightgbm
+    outs:
+    - path: models/candidates
+      hash: md5
+      md5: e32dd10f822f9c2e9d4c353f2470ee6b.dir
+      size: 124283
+      nfiles: 3
+    - path: reports/metrics.json
+      hash: md5
+      md5: ade649a1ab8050a68103631f1dbc26be
+      size: 1865
+  register:
+    cmd: python -m fraud_detection.models.register
+    deps:
+    - path: reports/metrics.json
+      hash: md5
+      md5: ade649a1ab8050a68103631f1dbc26be
+      size: 1865
+    - path: src/fraud_detection/models/mlflow_utils.py
+      hash: md5
+      md5: 683540e27cbb9cab8651009ded890c8c
+      size: 1801
+    - path: src/fraud_detection/models/register.py
+      hash: md5
+      md5: 63df1d2e3cdc232a8e6e4c1eee37affb
+      size: 7272
+    params:
+      params.yaml:
+        mlflow.registered_model_name: fraud-detection-champion
+        paths.promotion_report: reports/promotion.json
+        register:
+          promotion_metric: f1
+          min_delta: 0.0
+          production_stage: Production
+          archived_stage: Archived
+    outs:
+    - path: reports/promotion.json
+      hash: md5
+      md5: 9bc9063f8bd8cefc80124d0bc1d31984
+      size: 345

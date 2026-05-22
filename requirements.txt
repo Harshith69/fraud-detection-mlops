@@ -1,1 +1,45 @@
+# Project flow
 cookiecutter-data-science
+
+# Data
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+xgboost
+lightgbm
+optuna
+joblib
+pyarrow
+
+# Storage
+pymongo
+
+# MLflow + DagsHub
+mlflow
+DagsHub
+
+# DVC + DagsHub remote
+dvc
+dvc-s3
+dvc-http
+
+# API
+fastapi
+uvicorn
+pydantic
+
+# Notebook
+jupyter
+ipykernel
+matplotlib
+seaborn
+
+# Utils
+python-dotenv
+pyyaml
+
+# Tests / lint
+pytest
+pytest-cov
+ruff
