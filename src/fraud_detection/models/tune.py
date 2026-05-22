@@ -22,7 +22,6 @@ from ..logging_utils import get_logger
 from .factory import build_model, suggest_search_space
 from .mlflow_utils import init_mlflow
 
-
 _LOG = get_logger(__name__)
 
 

@@ -16,13 +16,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import json
-from pathlib import Path
 from typing import Any, Dict, Optional
 
 from ..config import Config, get_config
 from ..logging_utils import get_logger
 from .mlflow_utils import init_mlflow
-
 
 _LOG = get_logger(__name__)
 
@@ -144,7 +142,9 @@ def run_register(cfg: Config | None = None) -> PromotionDecision:
     mlflow_cfg = cfg.section("mlflow")
     registered_name = mlflow_cfg["registered_model_name"]
     production_stage = register_cfg.get("production_stage", "Production")
-    archived_stage = register_cfg.get("archived_stage", "Archived")
+    # Note: previous Production versions are auto-archived by MLflow when we
+    # call ``transition_model_version_stage(... archive_existing_versions=True)``
+    # below, so we don't need to read the archived_stage label explicitly.
 
     client = MlflowClient()
     incumbent = _get_production_version(client, registered_name, production_stage)

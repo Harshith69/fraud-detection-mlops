@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+from lightgbm import LGBMClassifier
 import pytest
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
 
 from fraud_detection.models.factory import (
     SUPPORTED_MODELS,

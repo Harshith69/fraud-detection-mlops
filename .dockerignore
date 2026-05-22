@@ -1,0 +1,44 @@
+# Local virtualenvs and caches
+fd_venv/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Notebooks and reports (the image runs the pipeline / API only)
+notebooks/
+reports/
+docs/
+
+# Data and model artefacts (these are pulled by DVC at runtime)
+data/raw/
+data/interim/
+data/processed/
+data/external/
+mlruns/
+models/candidates/
+models/scaler.joblib
+models/best_params.json
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# DVC internals
+.dvc/cache
+.dvc/tmp
+
+# Git
+.git/
+.gitignore
+
+# CI / docs / IDE
+.github/workflows/*.yml.bak
+.idea/
+.vscode/
+*.log

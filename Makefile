@@ -55,6 +55,26 @@ pipeline:
 dvc-repro:
 	dvc repro
 
+## Serve the inference API locally with hot reload
+.PHONY: api
+api:
+	$(PYTHON_INTERPRETER) -m uvicorn fraud_detection.api.app:app --reload --host 0.0.0.0 --port 8000
+
+## Build the Docker image
+.PHONY: docker-build
+docker-build:
+	docker build -t fraud-detection-mlops:dev .
+
+## Run the API container locally
+.PHONY: docker-run-api
+docker-run-api:
+	docker run --rm -p 8000:8000 --env-file .env fraud-detection-mlops:dev
+
+## Run the pipeline container locally
+.PHONY: docker-run-pipeline
+docker-run-pipeline:
+	docker run --rm --env-file .env -e APP_ROLE=pipeline fraud-detection-mlops:dev
+
 #################################################################################
 # Self Documenting Commands                                                     #
 #################################################################################

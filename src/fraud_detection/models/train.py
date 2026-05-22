@@ -22,7 +22,6 @@ from .evaluate import compute_metrics, pick_best
 from .factory import build_model, mlflow_log_model
 from .mlflow_utils import init_mlflow
 
-
 _LOG = get_logger(__name__)
 
 
@@ -46,9 +45,7 @@ class TrainResult:
 def _load_best_params(cfg: Config) -> Dict[str, Dict]:
     path = cfg.path("best_params")
     if not path.exists():
-        raise FileNotFoundError(
-            f"Best params file not found at {path}. Run the tune stage first."
-        )
+        raise FileNotFoundError(f"Best params file not found at {path}. Run the tune stage first.")
     payload = json.loads(path.read_text(encoding="utf-8"))
     return payload.get("best_params", {})
 

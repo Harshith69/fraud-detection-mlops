@@ -28,6 +28,7 @@ dvc-http
 fastapi
 uvicorn
 pydantic
+httpx
 
 # Notebook
 jupyter

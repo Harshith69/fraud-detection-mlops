@@ -12,7 +12,6 @@ from lightgbm import LGBMClassifier
 from sklearn.linear_model import LogisticRegression
 from xgboost import XGBClassifier
 
-
 SUPPORTED_MODELS: List[str] = ["logistic_regression", "xgboost", "lightgbm"]
 
 

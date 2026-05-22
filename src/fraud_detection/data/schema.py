@@ -7,7 +7,6 @@ from typing import Iterable, List
 
 import pandas as pd
 
-
 # The Kaggle 2023 fraud dataset has 28 anonymized PCA features (V1..V28),
 # a transaction `Amount`, an `id` row index, and the binary `Class` target.
 V_FEATURES: List[str] = [f"V{i}" for i in range(1, 29)]
@@ -38,7 +37,9 @@ class SchemaValidationResult:
         return problems
 
 
-def validate_dataframe(df: pd.DataFrame, *, required: Iterable[str] | None = None) -> SchemaValidationResult:
+def validate_dataframe(
+    df: pd.DataFrame, *, required: Iterable[str] | None = None
+) -> SchemaValidationResult:
     """Validate that ``df`` matches the expected fraud-dataset schema.
 
     The check is intentionally strict on columns and target values, but lenient

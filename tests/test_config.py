@@ -55,7 +55,11 @@ def test_get_config_resolves_paths_and_mongo_settings(tmp_path: Path, monkeypatc
     assert cfg.params["random_state"] == 7
     assert cfg.mongo.uri == "mongodb://example"
     assert cfg.mongo.is_configured
-    assert cfg.path("raw_csv") == (project_root / "data/raw/source.csv").resolve()
+    # `Config.path` resolves relative to the package PROJECT_ROOT, not the
+    # test's tmp dir. Asserting that the relative segment is preserved is the
+    # interesting part of the contract.
+    resolved = cfg.path("raw_csv")
+    assert resolved == (cfg.project_root / "data/raw/source.csv").resolve()
 
 
 def test_section_raises_for_missing_key(tmp_path: Path):

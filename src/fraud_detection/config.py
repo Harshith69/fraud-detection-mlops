@@ -1,9 +1,12 @@
 """Central configuration loader.
 
-All runtime configuration is read from two sources:
+Configuration is layered in this order (later sources override earlier):
 
-* `params.yaml` — pipeline parameters that are versioned alongside the code.
-* `.env` — secrets and per-environment settings that must not be committed.
+1. ``params.yaml`` — pipeline parameters that are versioned alongside the code.
+2. ``.env`` — local secrets and per-environment settings. Optional; only loaded
+   if the file exists. Never committed.
+3. Process environment — values already in ``os.environ`` always win. This is
+   how GitHub Actions / Docker / Kubernetes inject secrets without a ``.env``.
 
 The :class:`Config` dataclass exposes typed access so the rest of the codebase
 never reaches into ``os.environ`` or parses YAML directly.
@@ -11,15 +14,14 @@ never reaches into ``os.environ`` or parses YAML directly.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import lru_cache
 import os
 from pathlib import Path
 from typing import Any, Dict
 
-import yaml
 from dotenv import load_dotenv
-
+import yaml
 
 # Project layout. Every path in :class:`Config` resolves against PROJECT_ROOT
 # so the package works no matter what CWD a stage runs from.
@@ -94,7 +96,9 @@ def _load_params(path: Path) -> Dict[str, Any]:
     with path.open("r", encoding="utf-8") as fh:
         loaded = yaml.safe_load(fh) or {}
     if not isinstance(loaded, dict):
-        raise ValueError(f"params.yaml must define a mapping at the top level, got {type(loaded)!r}")
+        raise ValueError(
+            f"params.yaml must define a mapping at the top level, got {type(loaded)!r}"
+        )
     return loaded
 
 
@@ -120,6 +124,9 @@ def get_config(
     params_path = params_file or DEFAULT_PARAMS_FILE
     env_path = env_file or DEFAULT_ENV_FILE
 
+    # `.env` is local-only and optional. Process env vars (e.g. GitHub Actions
+    # secrets, Kubernetes secrets) are read directly from os.environ and take
+    # precedence over `.env` because we pass override=False.
     if env_path.exists():
         load_dotenv(env_path, override=False)
 
@@ -138,9 +145,8 @@ def get_config(
     )
 
     random_state = int(_strip(os.getenv("RANDOM_STATE")) or params.get("random_state", 42))
-    promotion_metric = (
-        _strip(os.getenv("PROMOTION_METRIC"))
-        or params.get("register", {}).get("promotion_metric", "f1")
+    promotion_metric = _strip(os.getenv("PROMOTION_METRIC")) or params.get("register", {}).get(
+        "promotion_metric", "f1"
     )
     promotion_min_delta = float(
         _strip(os.getenv("PROMOTION_MIN_DELTA"))

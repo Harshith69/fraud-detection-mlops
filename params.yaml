@@ -54,3 +54,11 @@ register:
   # Stage names used in the MLflow registry.
   production_stage: Production
   archived_stage: Archived
+
+api:
+  # Name of the registered model the inference API loads.
+  registered_model_name: fraud-detection-champion
+  # Stage the API loads. The retrain workflow promotes new versions here.
+  production_stage: Production
+  # Cache the loaded model in-process. Set to false when debugging.
+  cache_model: true

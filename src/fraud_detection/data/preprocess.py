@@ -26,7 +26,6 @@ from ..config import Config, get_config
 from ..logging_utils import get_logger
 from .schema import ID_COLUMN, TARGET_COLUMN, feature_columns, validate_dataframe
 
-
 _LOG = get_logger(__name__)
 
 
@@ -95,9 +94,7 @@ def run_preprocess(cfg: Config | None = None) -> PreprocessResult:
 
     validation = validate_dataframe(df)
     if not validation.is_valid:
-        raise ValueError(
-            "Snapshot failed schema validation: " + "; ".join(validation.errors)
-        )
+        raise ValueError("Snapshot failed schema validation: " + "; ".join(validation.errors))
 
     X_train, X_test, y_train, y_test, scaler = split_and_scale(
         df,
@@ -152,9 +149,7 @@ def load_processed(cfg: Config):
 def main() -> None:
     """CLI entry point used by the DVC stage."""
     result = run_preprocess()
-    _LOG.info(
-        "Preprocess complete: train=%d test=%d", result.train_rows, result.test_rows
-    )
+    _LOG.info("Preprocess complete: train=%d test=%d", result.train_rows, result.test_rows)
 
 
 if __name__ == "__main__":  # pragma: no cover - CLI guard

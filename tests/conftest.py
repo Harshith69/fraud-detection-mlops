@@ -11,7 +11,6 @@ import pytest
 
 from fraud_detection.config import Config, DagsHubConfig, MongoConfig
 
-
 # Re-usable schema constants. Mirrors src/fraud_detection/data/schema.py so a
 # breaking schema change is caught by tests.
 V_FEATURES: List[str] = [f"V{i}" for i in range(1, 29)]

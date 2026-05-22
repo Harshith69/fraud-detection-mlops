@@ -22,7 +22,6 @@ from ..logging_utils import get_logger
 from .mongo_client import mongo_collection
 from .schema import EXPECTED_COLUMNS, validate_dataframe
 
-
 _LOG = get_logger(__name__)
 
 
@@ -52,7 +51,9 @@ def push_to_mongodb(df: pd.DataFrame, cfg: Config) -> int:
     inserted = 0
     with mongo_collection(cfg.mongo) as collection:
         if drop_existing:
-            _LOG.info("Dropping existing collection %s.%s", cfg.mongo.database, cfg.mongo.collection)
+            _LOG.info(
+                "Dropping existing collection %s.%s", cfg.mongo.database, cfg.mongo.collection
+            )
             collection.drop()
 
         for batch in _chunked(records, batch_size):
@@ -83,9 +84,7 @@ def run_ingest(cfg: Config | None = None) -> IngestResult:
 
     validation = validate_dataframe(df)
     if not validation.is_valid:
-        raise ValueError(
-            "Raw dataset failed schema validation: " + "; ".join(validation.errors)
-        )
+        raise ValueError("Raw dataset failed schema validation: " + "; ".join(validation.errors))
 
     pushed = False
     inserted = 0
@@ -94,9 +93,7 @@ def run_ingest(cfg: Config | None = None) -> IngestResult:
             inserted = push_to_mongodb(df, cfg)
             pushed = True
         else:
-            _LOG.warning(
-                "push_to_mongo is True but MongoDB is not configured; skipping push."
-            )
+            _LOG.warning("push_to_mongo is True but MongoDB is not configured; skipping push.")
 
     snapshot.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(snapshot, index=False, columns=[c for c in EXPECTED_COLUMNS if c in df.columns])

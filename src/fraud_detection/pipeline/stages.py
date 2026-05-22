@@ -25,7 +25,6 @@ from ..models.register import run_register
 from ..models.train import run_train
 from ..models.tune import run_tune
 
-
 _LOG = get_logger(__name__)
 
 

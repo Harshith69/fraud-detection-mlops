@@ -7,7 +7,7 @@ that mock it) can still import this module without the dependency present.
 from __future__ import annotations
 
 from contextlib import contextmanager
-from typing import Iterator, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterator
 
 from ..config import MongoConfig
 
